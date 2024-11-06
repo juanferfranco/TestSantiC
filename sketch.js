@@ -24,6 +24,7 @@ let amplitude;
 let levelPower = 400;
 let colorPower = 2;
 let isSongLoaded = false; // Bandera para verificar si la canción está cargada
+let startButton; // Botón de Iniciar
 
 function preload() {
   customFont = loadFont("./CyberpunkFont.otf");
@@ -40,7 +41,7 @@ function setup() {
   buildingGap = random(20, 50);
 
   amplitude = new p5.Amplitude();
-  //song.play(); // Mantenemos comentado para evitar reproducción automática
+  // song.play(); // Mantenemos comentado para evitar reproducción automática
 
   for (let i = 0; i < maxLayers; i++) {
     layers.push([]);
@@ -54,6 +55,17 @@ function setup() {
   }
 
   frameRate(60); // Reducido a un valor razonable
+
+  // Crear el botón de Iniciar
+  startButton = createButton('Iniciar');
+  startButton.position(width / 2 - 50, height / 2 - 25);
+  startButton.size(100, 50);
+  startButton.style('font-size', '20px');
+  startButton.style('background-color', '#4CAF50');
+  startButton.style('color', 'white');
+  startButton.style('border', 'none');
+  startButton.style('border-radius', '5px');
+  startButton.mousePressed(startProgram);
 }
 
 function draw() {
@@ -65,9 +77,9 @@ function draw() {
     let colorIndex = map(
       layerIndex,
       0,
-      layers.length - 1,
-      0,
-      colors.length - 1
+        layers.length - 1,
+        0,
+        colors.length - 1
     );
     let col = colors[Math.floor(colorIndex)];
 
@@ -159,18 +171,19 @@ function drawBackground() {
   rect(0, height - groundHeight, width, groundHeight);
 }
 
-function mousePressed() {
-  // Iniciar el contexto de audio tras la interacción del usuario
+function startProgram() {
+  // Reanudar el contexto de audio
   if (getAudioContext().state !== 'running') {
     getAudioContext().resume();
   }
 
   // Cargar y reproducir la canción si aún no está cargada
   if (!isSongLoaded) {
-    song = loadSound("./V-Song.mp3", 
+    song = loadSound("./V-Song.mp3",
       () => {
         console.log("Audio cargado correctamente");
         song.play();
+        amplitude.setInput(song); // Asegurar que el Amplitude está ligado al audio
         isSongLoaded = true;
       },
       (err) => {
@@ -184,6 +197,16 @@ function mousePressed() {
     }
   }
 
+  // Ocultar el botón después de iniciar
+  startButton.hide();
+}
+
+function mousePressed() {
+  // Permitir que el usuario inicie la reproducción del audio también con clics
+  // Esto es opcional y complementa el botón de Iniciar
+  if (isSongLoaded && !song.isPlaying()) {
+    song.play();
+  }
   fallingStars.push(new FallingStar(mouseX, mouseY));
 }
 
