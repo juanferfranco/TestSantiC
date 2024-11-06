@@ -23,13 +23,11 @@ let song;
 let amplitude;
 let levelPower = 400;
 let colorPower = 2;
+let isSongLoaded = false; // Bandera para verificar si la canción está cargada
 
 function preload() {
   customFont = loadFont("./CyberpunkFont.otf");
-  song = loadSound("./V-Song.mp3", 
-    () => { console.log("Audio cargado correctamente"); },
-    (err) => { console.error("Error al cargar el audio:", err); }
-  );
+  // Eliminamos la carga de sonido de preload()
 }
 
 function setup() {
@@ -42,7 +40,7 @@ function setup() {
   buildingGap = random(20, 50);
 
   amplitude = new p5.Amplitude();
-  //song.play();
+  //song.play(); // Mantenemos comentado para evitar reproducción automática
 
   for (let i = 0; i < maxLayers; i++) {
     layers.push([]);
@@ -162,14 +160,30 @@ function drawBackground() {
 }
 
 function mousePressed() {
-  // Reiniciar el contexto de audio si no está activo
+  // Iniciar el contexto de audio tras la interacción del usuario
   if (getAudioContext().state !== 'running') {
     getAudioContext().resume();
   }
 
-  if (!song.isPlaying()) {
-    song.play();
+  // Cargar y reproducir la canción si aún no está cargada
+  if (!isSongLoaded) {
+    song = loadSound("./V-Song.mp3", 
+      () => {
+        console.log("Audio cargado correctamente");
+        song.play();
+        isSongLoaded = true;
+      },
+      (err) => {
+        console.error("Error al cargar el audio:", err);
+      }
+    );
+  } else {
+    // Si la canción ya está cargada, reproducirla si no está en reproducción
+    if (!song.isPlaying()) {
+      song.play();
+    }
   }
+
   fallingStars.push(new FallingStar(mouseX, mouseY));
 }
 
