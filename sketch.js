@@ -26,7 +26,10 @@ let colorPower = 2;
 
 function preload() {
   customFont = loadFont("./CyberpunkFont.otf");
-  song = loadSound("./V-Song.mp3");
+  song = loadSound("./V-Song.mp3", 
+    () => { console.log("Audio cargado correctamente"); },
+    (err) => { console.error("Error al cargar el audio:", err); }
+  );
 }
 
 function setup() {
@@ -39,7 +42,7 @@ function setup() {
   buildingGap = random(20, 50);
 
   amplitude = new p5.Amplitude();
-  song.play();
+  //song.play();
 
   for (let i = 0; i < maxLayers; i++) {
     layers.push([]);
@@ -52,7 +55,7 @@ function setup() {
     stars.push({ x: starX, y: starY, size: starSize });
   }
 
-  frameRate(layerSpeed);
+  frameRate(60); // Reducido a un valor razonable
 }
 
 function draw() {
@@ -159,9 +162,13 @@ function drawBackground() {
 }
 
 function mousePressed() {
-  if (!songStarted) {
+  // Reiniciar el contexto de audio si no está activo
+  if (getAudioContext().state !== 'running') {
+    getAudioContext().resume();
+  }
+
+  if (!song.isPlaying()) {
     song.play();
-    songStarted = true;
   }
   fallingStars.push(new FallingStar(mouseX, mouseY));
 }
